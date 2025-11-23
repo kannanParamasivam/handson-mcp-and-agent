@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "hr-code-of-conduct": {
+            "command": "uv",
+            "args": [
+                "run",
+                "code-of-conduct-mcp-server.py"
+            ],
+            "cwd": "/Users/xkxp169/Documents/source-code/practice/ml/mcp-server-code-of-conduct"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "mcpServers": {
+        "default-server": {
+            "command": "uv",
+            "args": [
+                "run",
+                "--with",
+                "mcp",
+                "mcp",
+                "run",
+                "code-of-conduct-mcp-server.py"
+            ],
+            "env": {
+                "HOME": "/Users/xkxp169",
+                "LOGNAME": "xkxp169",
+                "PATH": "/Users/xkxp169/.npm/_npx/5a9d879542beca3a/node_modules/.bin:/Users/xkxp169/Documents/source-code/practice/ml/mcp-server-code-of-conduct/node_modules/.bin:/Users/xkxp169/Documents/source-code/practice/ml/node_modules/.bin:/Users/xkxp169/Documents/source-code/practice/node_modules/.bin:/Users/xkxp169/Documents/source-code/node_modules/.bin:/Users/xkxp169/Documents/node_modules/.bin:/Users/xkxp169/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/xkxp169/.nvm/versions/node/v25.2.1/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/xkxp169/Documents/source-code/practice/ml/mcp-server-code-of-conduct/.venv/bin:/Users/xkxp169/.codeium/windsurf/bin:/opt/homebrew/Cellar/kubernetes-cli/1.31.0/bin:/Users/xkxp169/.rd/bin:/Users/xkxp169/.nvm/versions/node/v25.2.1/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/usr/local/go/bin:/usr/local/laps:/Users/xkxp169/.codeium/windsurf/bin:/opt/homebrew/Cellar/kubernetes-cli/1.31.0/bin:/Users/xkxp169/.rd/bin:/Users/xkxp169/.nvm/versions/node/v25.2.1/bin:/Users/xkxp169/.sdkman/candidates/java/current/bin:/Users/xkxp169/Library/Application Support/JetBrains/Toolbox/scripts:/opt/homebrew/Cellar/openssl@1.1/1.1.1q/bin:/Users/xkxp169/Documents/Tools/confluent-7.8.0/bin:/Users/xkxp169/istio-1.17.1/bin:/Users/xkxp169/Applications/IntelliJ\\ IDEA\\ Ultimate.app/Contents/MacOS :/Users/xkxp169/Documents/source-code/practice/flink/datastream-api-examples/flink-1.20.0/bin:/Users/xkxp169/.windsurf/extensions/ms-python.debugpy-2025.16.0-darwin-arm64/bundled/scripts/noConfigScripts:/Users/xkxp169/Library/Application Support/JetBrains/Toolbox/scripts:/opt/homebrew/Cellar/openssl@1.1/1.1.1q/bin:/Users/xkxp169/Documents/Tools/confluent-7.8.0/bin:/Users/xkxp169/istio-1.17.1/bin:/Users/xkxp169/Applications/IntelliJ\\ IDEA\\ Ultimate.app/Contents/MacOS :/Users/xkxp169/Documents/source-code/practice/flink/datastream-api-examples/flink-1.20.0/bin",
+                "SHELL": "/bin/zsh",
+                "TERM": "xterm-256color",
+                "USER": "xkxp169"
+            }
+        }
+    }
+}
