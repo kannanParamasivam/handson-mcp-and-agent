@@ -27,3 +27,13 @@ Show dependency tree
 ```shell
 uv tree
 ```
+
+Run MCP inspector
+```shell
+uv run fastmcp dev mcp/server/path/mcp-server-file.py
+```
+
+Run MCP client as python module
+```shell
+uv run python3 -m <folder-name>.mcp-client-file-name
+```
