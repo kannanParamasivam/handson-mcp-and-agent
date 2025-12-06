@@ -1,71 +1,85 @@
+import asyncio
+from contextlib import AsyncExitStack
 from dotenv import load_dotenv
+
+from langchain_ollama import ChatOllama
+from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_mcp_adapters.prompts import load_mcp_prompt
-from langgraph.prebuilt import create_react_agent
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
-from langchain_ollama import ChatOllama
-import asyncio
-#-----------------------------------------------------------------------
-# load environment variables
-#-----------------------------------------------------------------------
 
 load_dotenv()
 
-#-----------------------------------------------------------------------
-# Initialize the LLM
-#-----------------------------------------------------------------------
-model = ChatOllama(model="llama3.1")
+class TimeOffAgent:
+    def __init__(self, mcp_server_url: str, model_name: str = "llama3.1"):
+        self.mcp_server_url = mcp_server_url
+        self.model = ChatOllama(model=model_name)
+        self.exit_stack = AsyncExitStack()
+        self.session = None
+        self.agent = None
 
-#-----------------------------------------------------------------------
-# Define the HR timeoff agent that will use the MCP server
-# to manage timeoff requests.
-#-----------------------------------------------------------------------
-async def run_timeoff_agent(user: str, prompt: str) -> str:
-  mcp_server_url = "http://localhost:8000"
+    async def __aenter__(self):
+        # Connect to the MCP server
+        client = streamablehttp_client(self.mcp_server_url)
+        read, write, _ = await self.exit_stack.enter_async_context(client)
 
-  async with streamablehttp_client(mcp_server_url) as streamable_http_client:
-    read, write, other = streamable_http_client
-    
-    async with ClientSession(read, write) as session:
-      # initialize session
-      await session.initialize()
+        # Initialize the session
+        self.session = ClientSession(read, write)
+        await self.exit_stack.enter_async_context(self.session)
+        print("Initializing session...")
+        await self.session.initialize()
 
-      mcp_tools = await load_mcp_tools(session)
-      print("\nTools loaded:")
-      for tool in mcp_tools:
-        print(f"Tool: {tool.name} - {tool.description}")
+        # Load tools and create the agent
+        tools = await load_mcp_tools(self.session)
+        print(f"\nTools loaded: {[t.name for t in tools]}")
+        
+        print("\nCreating ReAct agent...")
+        self.agent = create_react_agent(self.model, tools)
+        
+        return self
 
-      llm_prompt = await load_mcp_prompt(session,
-                                    "get_llm_prompt",
-                                    arguments={"user" : user, "prompt" : prompt})
-      print("\nPrompt loaded :", llm_prompt)
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.exit_stack.aclose()
 
-      # Create ReAct agent with model and tools
-      react_agent = create_react_agent(model, mcp_tools)
+    async def query(self, user: str, prompt: str) -> str:
+        """Process a query for a user using the agent."""
+        if not self.agent or not self.session:
+            raise RuntimeError("Agent not initialized. Use 'async with' context manager.")
 
-      # Invoke agent with prompt
-      agent_response = await react_agent.ainvoke(
-        {"messages": llm_prompt})
-
-      return agent_response["messages"][-1].content
-
+        # Load the prompt context from the MCP server
+        llm_prompt = await load_mcp_prompt(
+            self.session,
+            "get_llm_prompt",
+            arguments={"user": user, "prompt": prompt}
+        )
+        print(f"\nPrompt loaded: {llm_prompt}")
+        
+        # Invoke the agent
+        response = await self.agent.ainvoke({"messages": llm_prompt})
+        return response["messages"][-1].content
 
 async def main():
-    """Run multiple timeoff agent queries in sequence"""
-    response = await run_timeoff_agent("Alice", "What is my time off balance?")
-    print(f"\nResponse: {response}")
+    """Run multiple timeoff agent queries in sequence."""
+    mcp_url = "http://localhost:8000"
+    
+    try:
+        async with TimeOffAgent(mcp_url) as agent:
+            queries = [
+                ("Alice", "What is my time off balance?"),
+                ("Alice", "File a time off request for 5 days starting from 2025-05-05"),
+                ("Alice", "What is my time off balance now?")
+            ]
 
-    response = await run_timeoff_agent(
-        "Alice", 
-        "File a time off request for 5 days starting from 2025-05-05")
-    print(f"\nResponse: {response}")
-
-    response = await run_timeoff_agent(
-        "Alice", 
-        "What is my time off balance now?")
-    print("\nResponse:", response)
-
+            for i, (user, query_text) in enumerate(queries, 1):
+                print(f"\n" + "="*50)
+                print(f"Query {i}: {query_text}")
+                print("="*50)
+                response = await agent.query(user, query_text)
+                print(f"\nResponse: {response}")
+                
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
