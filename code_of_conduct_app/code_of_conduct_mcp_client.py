@@ -4,7 +4,10 @@ from mcp.client.stdio import stdio_client
 from langchain_mcp_adapters.resources import load_mcp_resources
 from langchain_ollama import ChatOllama
 import os
+import sys
 import asyncio
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))) # this is not needed when running this file as module. This helps when debugging this file.
 from utils.model_utils import test_model_connection
 
 
@@ -18,7 +21,7 @@ load_dotenv()
 # ------------------------------------------------------------------------
 # get current files absolute path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-server_path = os.path.join(current_dir, "code-of-conduct-mcp-server.py")
+server_path = os.path.join(current_dir, "code_of_conduct_mcp_server.py")
 
 server_params = StdioServerParameters(
     command="uv",
