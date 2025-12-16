@@ -21,3 +21,4 @@ class Person:
 person = Person(**data)
 print(person.name, person.age, person.city)
 print(json.dumps(person.__dict__))
+print(type(json.dumps(person.__dict__)))

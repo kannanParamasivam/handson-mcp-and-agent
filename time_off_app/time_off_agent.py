@@ -12,14 +12,16 @@ from mcp.client.streamable_http import streamablehttp_client
 load_dotenv()
 
 class TimeOffAgent:
-    def __init__(self, mcp_server_url: str, model_name: str = "llama3.1"):
+    def __init__(self, mcp_server_url: str = "http://localhost:8000", model_name: str = "llama3.1"):
         self.mcp_server_url = mcp_server_url
         self.model = ChatOllama(model=model_name)
-        self.exit_stack = AsyncExitStack()
+        self.model = ChatOllama(model=model_name)
+        # self.exit_stack is initialized in __aenter__
         self.session = None
         self.agent = None
 
     async def __aenter__(self):
+        self.exit_stack = AsyncExitStack()
         # Connect to the MCP server
         client = streamablehttp_client(self.mcp_server_url)
         read, write, _ = await self.exit_stack.enter_async_context(client)
@@ -42,7 +44,7 @@ class TimeOffAgent:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.exit_stack.aclose()
 
-    async def query(self, user: str, prompt: str) -> str:
+    async def submit_request(self, user: str, prompt: str) -> str:
         """Process a query for a user using the agent."""
         if not self.agent or not self.session:
             raise RuntimeError("Agent not initialized. Use 'async with' context manager.")
@@ -75,7 +77,7 @@ async def main():
                 print(f"\n" + "="*50)
                 print(f"Query {i}: {query_text}")
                 print("="*50)
-                response = await agent.query(user, query_text)
+                response = await agent.submit_request(user, query_text)
                 print(f"\nResponse: {response}")
                 
     except Exception as e:
