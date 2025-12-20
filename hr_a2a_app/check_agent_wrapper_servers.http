@@ -1,0 +1,59 @@
+
+@baseUrl = http://localhost
+
+
+### Get Agent Card for HR Policy Agent
+GET {{baseUrl}}:9001/.well-known/agent.json
+
+
+### HR Policy Agent - Get remote work policy
+# @name hr_policy
+POST {{baseUrl}}:9001/
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "role": "user",
+      "messageId": "test-{{$guid}}",
+      "parts": [{
+        "text": "{\"prompt\": \"What is the policy on remote work?\"}"
+      }]
+    }
+  },
+  "id": {{$timestamp}}
+}
+
+
+### Get Agent Card for Timeoff Agent
+GET {{baseUrl}}:9002/.well-known/agent.json
+
+
+### Timeoff Agent - Check time off balance
+# @name timeoff_balance
+POST {{baseUrl}}:9002/
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "role": "user",
+      "messageId": "test-{{$guid}}",
+      "parts": [
+        {
+          "text": """
+          {
+            "user": "Alice",
+            "prompt": "What is my time off balance?"
+          }
+          """
+        }
+      ]
+    }
+  },
+  "id": {{$timestamp}}
+}

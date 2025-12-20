@@ -42,4 +42,3 @@ def get_code_of_conduct() -> str:
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
-

@@ -107,25 +107,4 @@ if __name__ == "__main__":
 # * Synchronous version of WSGI
 # e.g: Flask, Django
 
-# Get Agent Card: 
-# curl http://localhost:9001/.well-known/agent.json
-
-# Send Message: 
-# curl -X POST http://localhost:9001/ \
-#   -H "Content-Type: application/json" \
-#   -d '{
-#     "jsonrpc": "2.0",
-#     "method": "message/send",
-#     "params": {
-#       "message": {
-#         "role": "user",
-#         "messageId": "test-id-1",
-#         "parts": [{
-#           "text": "{\"prompt\": \"What is the policy on remote work?\"}"
-#         }]
-#       }
-#     },
-#     "id": 1
-#   }'
-
 
