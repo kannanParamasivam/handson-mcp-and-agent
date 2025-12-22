@@ -1,7 +1,8 @@
 import sys
 import os
+from annotated_types import UpperCase
 from dotenv import load_dotenv
-from typing import TypedDict, Annotated
+from typing import TypedDict, Annotated, Any
 import operator
 import asyncio
 import uuid
@@ -17,16 +18,37 @@ from a2a.types import SendMessageRequest, MessageSendParams, AgentCard, Message
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'../'))) 
 from utils.log_utils import log_message
 
+load_dotenv()
+
 actor = "Router Agent"
 # - ----------------------------------------------------------------------
 # Setup LLM for the agent
 # -----------------------------------------------------------------------
-load_dotenv()
 
-# chat wrapper is suitable for interct with model by assigning it a role and make it tool call aware
+
+# chat wrapper is suitable for interacting with model by assigning it a role and make it tool call aware
 model = ChatOllama(
     model="llama3.1",  # or any other model you have installed
     temperature=0.7)
+
+# ---------------------------------------------------------------
+# Setup System Prompt to assign persona to LLM and select user
+# ---------------------------------------------------------------
+system_prompt = """ 
+    You are a Router, that analyzes the input query and chooses 3 options:
+    POLICY: If the query is about HR policies, like leave, remote work, etc.
+    TIMEOFF: If the query is about time off requests, both creating requests and checking balances
+    UNSUPPORTED: Any other query that is not related to HR policies or time off requests.
+
+    The output should only be just one word out of the possible 3 : POLICY, TIMEOFF, UNSUPPORTED.
+    """
+
+user = "Alice"
+
+# ---------------------------------------------------------------
+# Router Graph configuration
+# ---------------------------------------------------------------
+router_graph_config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
 # ---------------------------------------------------------------
 # Helper method to invoke remote agent through agent wrapper
@@ -37,7 +59,7 @@ async def execute_a2a_agent(agent_card_url: str, user: str, prompt: str) -> str:
     async with httpx.AsyncClient(timeout=30) as httpx_client:
         
       # create agent card from URL
-      agent_card_response = await httpx_client.get(f"{agent_card_url}/.well-known/agent.json")
+      agent_card_response = await httpx_client.get(f"{agent_card_url}/.well-known/agent-card.json")
       agent_card_response.raise_for_status()
       agent_card = AgentCard(**agent_card_response.json()) 
       
@@ -135,6 +157,22 @@ class RouterHRAgent:
 
       return {"messages": [llm_response]} # the graph engine adds this AIMessage to the shared state
 
+
+    def find_route(self, state: RouterAgentState):
+      last_message = state["messages"][-1]
+      
+      if last_message.content.upper() not in ["POLICY", "TIMEOFF", "UNSUPPORTED"]:
+        return "UNSUPPORTED"
+      
+      if self.debug:
+        log_message(actor, f"Router: Last result from LLM : {last_message}")
+
+      # Set the last message as the destination
+      destination = last_message.content
+
+      log_message(actor, f"Destination chosen : {destination}")
+      return destination
+
     
     def call_policy_agent(self, state: RouterAgentState):
       
@@ -188,16 +226,7 @@ class RouterHRAgent:
         return {"messages": [AIMessage(content=response)]}
 
     
-    def find_route(self, state: RouterAgentState):
-      last_message = state["messages"][-1]
-      if self.debug:
-        log_message(actor, f"Router: Last result from LLM : {last_message}")
 
-      # Set the last message as the destination
-      destination = last_message.content
-
-      log_message(actor, f"Destination chosen : {destination}")
-      return destination
 
 
 if __name__ == "__main__":
@@ -205,30 +234,16 @@ if __name__ == "__main__":
   try:
     # Mimic chatbot
 
-    # Select user
-    user = "Alice"
-    
-    system_prompt = """ 
-        You are a Router, that analyzes the input query and chooses 3 options:
-        POLICY: If the query is about HR policies, like leave, remote work, etc.
-        TIMEOFF: If the query is about time off requests, both creating requests and checking balances
-        UNSUPPORTED: Any other query that is not related to HR policies or time off requests.
-    
-        The output should only be just one word out of the possible 3 : POLICY, TIMEOFF, UNSUPPORTED.
-        """
-
     router_hr_agent = RouterHRAgent(model, system_prompt, user, debug=False)
 
     user_inputs = [
-            "Tell me about payroll processing",
-            "What is the policy for remote work?",
-            "What is my vacation balance?",
-            "File a time off request for 5 days starting from 2025-05-05",
-            "What is vacation balance now?",
+            # "Tell me about payroll processing",
+            # "What is the policy for remote work?",
+            # "What is my vacation balance?",
+            # "File a time off request for 5 days starting from 2025-05-05",
+            # "What is vacation balance now?",
+            "how to handle conflicts?"
         ]
-
-    # Create a new chat session each time
-    config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
     for input in user_inputs:
             print(f"----------------------------------------\nUSER : {input}")
@@ -236,7 +251,7 @@ if __name__ == "__main__":
             user_message = {"messages": [HumanMessage(input)]}
             # Get response from the agent
             ai_response = router_hr_agent.router_graph.invoke(
-                user_message, config=config)
+                user_message, config=router_graph_config)
             # Print the response
             print(f"\nAGENT : {ai_response['messages'][-1].content}")
 

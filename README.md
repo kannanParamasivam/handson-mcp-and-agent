@@ -54,7 +54,7 @@ This will start the hr policy agent server on port 9001.
 
 * Run agent server for timeoff agent
 ```shell
-uv run python3 -m time_off_app.time_off_a2a_wrapper_server
+uv run python3 -m hr_a2a_app.time_off_policy_a2a_wrapper_server
 ```
 This will start the timeoff agent server on port 9002.
 
@@ -63,3 +63,16 @@ This will start the timeoff agent server on port 9002.
 uv run python3 -m hr_a2a_app.hr_client_router_agent
 ```
 This will run few user prompts to test the router agent.  
+
+## Run UI App
+Alternatively, you can just run the UI app using below command.
+This will start the necessary agent servers and mcp servers and run the UI app.
+
+```shell
+uv run python3 -m hr_a2a_app.terminal_ui
+```
+
+![HR A2A demo](./demo.gif)
+
+
+

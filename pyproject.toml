@@ -20,4 +20,5 @@ dependencies = [
     "langchain-ollama>=0.3.3",
     "fastmcp>=2.13.1",
     "a2a-sdk>=0.3.20",
+    "textual>=0.63.0",
 ]
